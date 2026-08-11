@@ -9,7 +9,7 @@ import { supabase } from "./utils/supabase.js";
    Team view     : reviews submissions, downloads Excel spreadsheets.
    Team access code (change as needed):
 */
-const TEAM_ACCESS_CODE = "HUB-TEAM";
+const TEAM_ACCESS_CODE = "HUB-ADMIN-4297";
 /* ================================================================ */
 
 const VENUE = [
