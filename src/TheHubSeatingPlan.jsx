@@ -14,8 +14,7 @@ const TEAM_ACCESS_CODE = "HUB-ADMIN-4297";
 
 const VENUE = [
   {
-    area: "Main Hall",
-    blurb: "Five feature tables at the heart of the venue.",
+    area: "Main Restaurant",
     tables: [
       { id: "table-1", name: "Table One", capacity: 9, dims: "2800mm × 700mm", mm: [2800, 700], layout: { top: 4, bottom: 4, left: 1, right: 0 } },
       { id: "table-2", name: "Table Two", capacity: 9, dims: "2800mm × 700mm", mm: [2800, 700], layout: { top: 4, bottom: 4, left: 0, right: 1 } },
@@ -26,7 +25,7 @@ const VENUE = [
   },
   {
     area: "Nursery & Concourse",
-    blurb: "Beside the open kitchen — watch the chefs at work.",
+
     hasKitchen: true,
     tables: [
       { id: "nursery-1", name: "Nursery Table One", capacity: 8, dims: "2800mm × 800mm", mm: [2800, 800], layout: { top: 4, bottom: 4, left: 0, right: 0 } },
@@ -36,7 +35,7 @@ const VENUE = [
   },
   {
     area: "Mezzanine",
-    blurb: "An intimate upper level of benches and high tables.",
+
     tables: [
       { id: "mezz-1", name: "Mezz Table One", capacity: 8, dims: "2200mm × 790mm", mm: [2200, 790], note: "Benches", bench: true },
       { id: "mezz-2", name: "Mezz Table Two", capacity: 8, dims: "2200mm × 790mm", mm: [2200, 790], note: "Benches", bench: true },
@@ -60,9 +59,9 @@ const emptyNames = () => {
 /* ---------- storage helpers (fail-safe) ---------- */
 // Fallback for window.storage since we're in a standard React app
 const storageGet = async (key, shared = false) => {
-  try { 
+  try {
     if (window.storage && window.storage.get) {
-      const r = await window.storage.get(key, shared); return r ? JSON.parse(r.value) : null; 
+      const r = await window.storage.get(key, shared); return r ? JSON.parse(r.value) : null;
     } else {
       const r = localStorage.getItem(key);
       return r ? JSON.parse(r) : null;
@@ -71,9 +70,9 @@ const storageGet = async (key, shared = false) => {
   catch { return null; }
 };
 const storageSet = async (key, value, shared = false) => {
-  try { 
+  try {
     if (window.storage && window.storage.set) {
-      await window.storage.set(key, JSON.stringify(value), shared); return true; 
+      await window.storage.set(key, JSON.stringify(value), shared); return true;
     } else {
       localStorage.setItem(key, JSON.stringify(value));
       return true;
@@ -188,7 +187,7 @@ function TableCard({ table, names, setName, readOnly }) {
         <div>
           <h3>{table.name}</h3>
           <p className="meta">
-            Seats {table.capacity} · {table.dims}{table.note ? ` · ${table.note}` : ""}
+            Seats {table.capacity}{table.note ? ` · ${table.note}` : ""}
           </p>
         </div>
         <span className={"count" + (filled === table.capacity ? " full" : "")}>{filled}/{table.capacity}</span>
@@ -224,7 +223,7 @@ const FP_MAP = {
   "mezz-6": { x: 420, y: 855 },
 };
 const FP_PANELS = [
-  { label: "MAIN HALL", x: 16, y: 46, w: 968, h: 330 },
+  { label: "MAIN RESTAURANT", x: 16, y: 46, w: 968, h: 330 },
   { label: "NURSERY & CONCOURSE", x: 16, y: 396, w: 968, h: 288 },
   { label: "MEZZANINE", note: "UPPER LEVEL · SITS ABOVE THE CONCOURSE, EXTENDING RIGHT", x: 380, y: 704, w: 604, h: 246 },
 ];
@@ -263,26 +262,23 @@ function FloorPlan({ names, onJump }) {
         const full = filled === t.capacity;
         const cx = m.x + w / 2, cy = m.y + h / 2;
         const short = t.name.replace("Table ", "").replace("Mezz ", "M· ").toUpperCase();
-        const dimsShort = `${t.mm[0]}×${t.mm[1]}mm`;
         return (
           <g key={t.id} className="fp-table" onClick={() => onJump && onJump(t.id)}
-            tabIndex={0} role="button" aria-label={`${t.name}, ${t.dims}, ${filled} of ${t.capacity} seats named. Activate to jump to this table.`}
+            tabIndex={0} role="button" aria-label={`${t.name}, ${filled} of ${t.capacity} seats named. Activate to jump to this table.`}
             onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && onJump && onJump(t.id)}>
             <rect x={m.x} y={m.y} width={w} height={h} rx="8"
               fill={full ? "#43604D" : "#EAF0EB"} stroke={filled > 0 && !full ? "#A3823F" : "#CFDCD2"}
               strokeWidth={filled > 0 && !full ? 2 : 1} />
             {m.vertical ? (
               <g transform={`rotate(-90 ${cx} ${cy})`}>
-                <text x={cx} y={cy - 3} textAnchor="middle" className={"fp-name" + (full ? " on" : "")}>
+                <text x={cx} y={cy + 2} textAnchor="middle" className={"fp-name" + (full ? " on" : "")}>
                   {short} · {filled}/{t.capacity}
                 </text>
-                <text x={cx} y={cy + 12} textAnchor="middle" className={"fp-dims" + (full ? " on" : "")}>{dimsShort}</text>
               </g>
             ) : (
               <>
-                <text x={cx} y={cy - 7} textAnchor="middle" className={"fp-name" + (full ? " on" : "")}>{short}</text>
-                <text x={cx} y={cy + 6} textAnchor="middle" className={"fp-count" + (full ? " on" : "")}>{filled}/{t.capacity}</text>
-                <text x={cx} y={m.y + h - 6} textAnchor="middle" className={"fp-dims" + (full ? " on" : "")}>{dimsShort}</text>
+                <text x={cx} y={cy - 3} textAnchor="middle" className={"fp-name" + (full ? " on" : "")}>{short}</text>
+                <text x={cx} y={cy + 10} textAnchor="middle" className={"fp-count" + (full ? " on" : "")}>{filled}/{t.capacity}</text>
               </>
             )}
           </g>
@@ -371,7 +367,7 @@ export default function TheHubSeatingPlan() {
       names, filledCount,
       submittedAt: new Date().toISOString(),
     };
-    
+
     const { error: insertError } = await supabase
       .from('the-hub-booking')
       .insert({
@@ -656,10 +652,10 @@ export default function TheHubSeatingPlan() {
               </div>
               {VENUE.map((areaDef) => (
                 <div key={areaDef.area}>
-                  <div className="area-head"><h2>{areaDef.area}</h2><span className="blurb">{areaDef.blurb}</span></div>
+                  <div className="area-head"><h2>{areaDef.area}</h2></div>
                   {areaDef.hasKitchen && <div className="kitchen">OPEN KITCHEN</div>}
                   {areaDef.tables.map((t) => (
-                    <TableCard key={t.id} table={t} names={detail.names[t.id] || Array(t.capacity).fill("")} readOnly setName={() => {}} />
+                    <TableCard key={t.id} table={t} names={detail.names[t.id] || Array(t.capacity).fill("")} readOnly setName={() => { }} />
                   ))}
                 </div>
               ))}
@@ -677,9 +673,7 @@ export default function TheHubSeatingPlan() {
         <span className="eyebrow">The Hub · Weddings</span>
         <h1>Your seating plan</h1>
         <p className="sub">
-          Add a guest's name to each seat below. The plan mirrors the venue exactly — {TOTAL_SEATS} seats
-          across the Main Hall, the Nursery &amp; Concourse and the Mezzanine. Leave any seats you don't
-          need blank. Your work saves automatically as you type.
+          Add a guest's name to each seat below. Leave any seats you don't need blank. Your work is saved when you submit the form.
         </p>
         <div className="rule" />
       </div>
@@ -723,7 +717,7 @@ export default function TheHubSeatingPlan() {
 
         {VENUE.map((areaDef) => (
           <div key={areaDef.area}>
-            <div className="area-head"><h2>{areaDef.area}</h2><span className="blurb">{areaDef.blurb}</span></div>
+            <div className="area-head"><h2>{areaDef.area}</h2></div>
             {areaDef.hasKitchen && <div className="kitchen">OPEN KITCHEN</div>}
             {areaDef.tables.map((t) => (
               <TableCard key={t.id} table={t} names={names[t.id]}
