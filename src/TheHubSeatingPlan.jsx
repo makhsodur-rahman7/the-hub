@@ -263,7 +263,7 @@ function AreaIcon({ area }) {
   if (area.includes("Restaurant")) {
     return (
       <svg className="area-icon-svg" viewBox="0 0 24 24" fill="currentColor" style={{ color: '#A87A5B' }}>
-        <path d="M11,9H9V2H7v7H5V2H3v7c0,2.12,1.66,3.84,3.75,3.97V22h2.5v-9.03C11.34,12.84,13,11.12,13,9V2h-2V9z M16,6v8h2.5v8H21V2 C18.24,2,16,4.24,16,6z"/>
+        <path d="M11,9H9V2H7v7H5V2H3v7c0,2.12,1.66,3.84,3.75,3.97V22h2.5v-9.03C11.34,12.84,13,11.12,13,9V2h-2V9z M16,6v8h2.5v8H21V2 C18.24,2,16,4.24,16,6z" />
       </svg>
     );
   }
@@ -282,7 +282,7 @@ function AreaIcon({ area }) {
   }
   // Mezzanine
   return (
-    <div className="area-icon-svg" style={{ 
+    <div className="area-icon-svg" style={{
       backgroundColor: '#A87A5B',
       WebkitMask: 'url(/images/mezzanine-icon.png) no-repeat center / contain',
       mask: 'url(/images/mezzanine-icon.png) no-repeat center / contain'
@@ -827,7 +827,7 @@ export default function TheHubSeatingPlan() {
             <div className="modal">
               <div className="modal-icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                  <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
               <div className="modal-text">{error}</div>
@@ -1007,7 +1007,7 @@ export default function TheHubSeatingPlan() {
           <div className="modal">
             <div className="modal-icon">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
             </div>
             <div className="modal-text">{error}</div>
@@ -1039,8 +1039,12 @@ export default function TheHubSeatingPlan() {
             </svg>
             <span className="logo-lw" style={{ fontStyle: "normal" }}>Wedding Seating Planner</span>
           </div>
-          <div className="nav-divider" />
-          <div className="nav-couple">Wedding of {coupleName || "Amelia & James"}</div>
+          {coupleName && (
+            <>
+              <div className="nav-divider" />
+              <div className="nav-couple">Wedding of {coupleName}</div>
+            </>
+          )}
         </div>
         <div className="nav-right">
           <button className="nav-save-btn" onClick={submit} disabled={submitting}>
@@ -1206,9 +1210,9 @@ export default function TheHubSeatingPlan() {
             )}
           </button>
           <div className="autosave-note">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-              </svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" />
+            </svg>
             You'll be able to download a copy for yourselves after sending.
           </div>
           <p style={{ color: "var(--muted)", fontSize: 12.5, marginTop: 10, maxWidth: 560, marginLeft: "auto", marginRight: "auto", lineHeight: 1.55 }}>
