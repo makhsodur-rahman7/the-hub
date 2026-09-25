@@ -19,7 +19,7 @@
     data-public-key="public_key_e982710c9863d7d2af299" data-agent-id="agent_b433209fced235dc9fba3db0f5"
     data-voice-public-key="public_key_e982710c9863d7d2af299" data-title="The Hub on Verulam"
     data-logo-url="/images/The-Hub-Logo-Green.svg" data-color="#2F5D46"
-    data-theme-color="#14201A" data-component-color="#1E2D25" data-fab-text="Hub Assistant" data-bot-name="Hub Assistant"
+    data-theme-color="#14201A" data-component-color="#1E2D25" data-fab-text="Hub Concierge" data-bot-name="Hub Concierge"
     data-popup-message="Welcome to The Hub on Verulam — shall I find you a table?" data-show-ai-popup="false"
     data-show-ai-popup-time="3" data-auto-open="false"></script>
     
@@ -28,9 +28,9 @@
     const retellAvatarInterval = setInterval(() => {
       const widget = document.querySelector('retell-widget') || document.querySelector('*[id^="retell"]')?.shadowRoot?.host;
       if (widget && widget.shadowRoot) {
-        // Search for the text "Hub Assistant" to accurately find the FAB button
+        // Search for the text "Hub Concierge" to accurately find the FAB button
         const walkDOM = (node) => {
-          if (node.nodeType === 3 && node.nodeValue.includes('Hub Assistant')) {
+          if (node.nodeType === 3 && node.nodeValue.includes('Hub Concierge')) {
             let button = node.parentElement;
             while(button && button.tagName !== 'BUTTON' && button.getAttribute('role') !== 'button') {
                button = button.parentElement;
