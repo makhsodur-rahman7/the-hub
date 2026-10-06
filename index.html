@@ -65,24 +65,26 @@
             // We use a CSS-based approach instead of fighting React's DOM attributes!
             const forceState = () => {
                 if (isThinking) {
-                    // Inject the Messenger-style typing bubble into the messages container
-                    if (currentRoot) {
-                        const messagesContainer = currentRoot.querySelector('[class*="_messages_"], [class*="messages"]') || currentRoot.querySelector('div');
-                        if (messagesContainer) {
-                            let bubble = messagesContainer.querySelector('#retell-typing-bubble');
-                            if (!bubble) {
-                                bubble = document.createElement('div');
-                                bubble.id = 'retell-typing-bubble';
-                                bubble.style.cssText = 'display: flex; align-self: flex-start; background: #f4f6fb; padding: 12px 16px; border-radius: 12px; margin: 8px 0; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); width: fit-content; margin-right: auto;';
-                                bubble.innerHTML = `
-                                    <div class="retell-typing-dot"></div>
-                                    <div class="retell-typing-dot"></div>
-                                    <div class="retell-typing-dot"></div>
-                                `;
-                                messagesContainer.appendChild(bubble);
-                                // Scroll to bottom so user sees the typing indicator
-                                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                    // Inject the Messenger-style typing bubble fixed above the input box
+                    if (input && input.parentNode) {
+                        let bubble = input.parentNode.querySelector('#retell-typing-bubble');
+                        if (!bubble) {
+                            // Ensure the parent has relative positioning so our absolute bubble aligns correctly
+                            const parentStyle = window.getComputedStyle(input.parentNode);
+                            if (parentStyle.position === 'static') {
+                                input.parentNode.style.setProperty('position', 'relative', 'important');
                             }
+                            
+                            bubble = document.createElement('div');
+                            bubble.id = 'retell-typing-bubble';
+                            // Position it absolutely above the input box (bottom: 100%)
+                            bubble.style.cssText = 'position: absolute; bottom: 100%; left: 0px; margin-bottom: 12px; display: flex; background: #f4f6fb; padding: 10px 14px; border-radius: 16px; align-items: center; gap: 4px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); z-index: 9999; border: 1px solid #e5e7eb;';
+                            bubble.innerHTML = `
+                                <div class="retell-typing-dot"></div>
+                                <div class="retell-typing-dot"></div>
+                                <div class="retell-typing-dot"></div>
+                            `;
+                            input.parentNode.appendChild(bubble);
                         }
                     }
                     
