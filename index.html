@@ -65,24 +65,7 @@
             // We use a CSS-based approach instead of fighting React's DOM attributes!
             const forceState = () => {
                 if (isThinking) {
-                    if (input && input.isConnected) {
-                        input.style.setProperty('display', 'none', 'important');
-                        
-                        let msg = input.parentNode.querySelector('#retell-thinking-msg');
-                        if (!msg) {
-                            msg = document.createElement('div');
-                            msg.id = 'retell-thinking-msg';
-                            msg.textContent = 'Thanks, bear with me...';
-                            msg.style.cssText = 'padding: 10px 14px; color: #99a0ae; font-size: 16px; font-family: inherit; flex: 1; display: flex; align-items: center;';
-                            input.parentNode.insertBefore(msg, input);
-                        }
-                    }
-                    
-                    if (button && button.isConnected) {
-                        button.style.setProperty('display', 'none', 'important');
-                    }
-                    
-                    // 2. Inject the Messenger-style typing bubble into the messages container
+                    // Inject the Messenger-style typing bubble into the messages container
                     if (currentRoot) {
                         const messagesContainer = currentRoot.querySelector('[class*="_messages_"], [class*="messages"]') || currentRoot.querySelector('div');
                         if (messagesContainer) {
@@ -113,14 +96,6 @@
                 if (isThinking) setThinkingState(currentInput, currentButton, false);
             }, 30000);
         } else {
-            if (input) {
-                input.style.removeProperty('display');
-                let msg = input.parentNode ? input.parentNode.querySelector('#retell-thinking-msg') : null;
-                if (msg) msg.remove();
-            }
-            if (button) {
-                button.style.removeProperty('display');
-            }
             if (currentRoot) {
                 const bubble = currentRoot.querySelector('#retell-typing-bubble');
                 if (bubble) bubble.remove();
