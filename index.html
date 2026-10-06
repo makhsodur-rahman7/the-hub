@@ -22,6 +22,231 @@
     data-theme-color="#14201A" data-component-color="#1E2D25" data-fab-text="Hub Concierge" data-bot-name="Hub Concierge"
     data-popup-message="Welcome to The Hub on Verulam — shall I find you a table?" data-show-ai-popup="false"
     data-show-ai-popup-time="3" data-auto-open="false"></script>
+  <script>
+(function() {
+    let thinkingTimeout = null;
+    let observer = null;
+    let messagesObserver = null;
+    let isThinking = false;
+    let currentInput = null;
+    let currentButton = null;
+    
+    let originalPlaceholder = ''; 
+    
+    let lastSendTime = 0;
+    
+    let currentRoot = null;
+    
+    function setThinkingState(input, button, isThinkingNow) {
+        if (!input) return;
+        isThinking = isThinkingNow;
+        if (isThinkingNow) {
+            lastSendTime = Date.now();
+            
+            // 1. Add CSS for the typing animation if it doesn't exist
+            if (currentRoot && !currentRoot.getElementById('retell-custom-styles')) {
+                const style = document.createElement('style');
+                style.id = 'retell-custom-styles';
+                style.textContent = `
+                    @keyframes retellTypingBounce {
+                        0%, 80%, 100% { transform: translateY(0); }
+                        40% { transform: translateY(-5px); }
+                    }
+                    .retell-typing-dot {
+                        width: 6px; height: 6px; background-color: #90949c; border-radius: 50%;
+                        animation: retellTypingBounce 1.4s infinite ease-in-out both;
+                    }
+                    .retell-typing-dot:nth-child(1) { animation-delay: -0.32s; }
+                    .retell-typing-dot:nth-child(2) { animation-delay: -0.16s; }
+                `;
+                currentRoot.appendChild(style);
+            }
+
+            // We use a CSS-based approach instead of fighting React's DOM attributes!
+            const forceState = () => {
+                if (isThinking) {
+                    if (input && input.isConnected) {
+                        input.style.setProperty('display', 'none', 'important');
+                        
+                        let msg = input.parentNode.querySelector('#retell-thinking-msg');
+                        if (!msg) {
+                            msg = document.createElement('div');
+                            msg.id = 'retell-thinking-msg';
+                            msg.textContent = 'Thanks, bear with me...';
+                            msg.style.cssText = 'padding: 10px 14px; color: #99a0ae; font-size: 16px; font-family: inherit; flex: 1; display: flex; align-items: center;';
+                            input.parentNode.insertBefore(msg, input);
+                        }
+                    }
+                    
+                    if (button && button.isConnected) {
+                        button.style.setProperty('display', 'none', 'important');
+                    }
+                    
+                    // 2. Inject the Messenger-style typing bubble into the messages container
+                    if (currentRoot) {
+                        const messagesContainer = currentRoot.querySelector('[class*="_messages_"], [class*="messages"]') || currentRoot.querySelector('div');
+                        if (messagesContainer) {
+                            let bubble = messagesContainer.querySelector('#retell-typing-bubble');
+                            if (!bubble) {
+                                bubble = document.createElement('div');
+                                bubble.id = 'retell-typing-bubble';
+                                bubble.style.cssText = 'display: flex; align-self: flex-start; background: #f4f6fb; padding: 12px 16px; border-radius: 12px; margin: 8px 0; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); width: fit-content; margin-right: auto;';
+                                bubble.innerHTML = `
+                                    <div class="retell-typing-dot"></div>
+                                    <div class="retell-typing-dot"></div>
+                                    <div class="retell-typing-dot"></div>
+                                `;
+                                messagesContainer.appendChild(bubble);
+                                // Scroll to bottom so user sees the typing indicator
+                                messagesContainer.scrollTop = messagesContainer.scrollHeight;
+                            }
+                        }
+                    }
+                    
+                    requestAnimationFrame(forceState);
+                }
+            };
+            requestAnimationFrame(forceState);
+            
+            if (thinkingTimeout) clearTimeout(thinkingTimeout);
+            thinkingTimeout = setTimeout(() => {
+                if (isThinking) setThinkingState(currentInput, currentButton, false);
+            }, 30000);
+        } else {
+            if (input) {
+                input.style.removeProperty('display');
+                let msg = input.parentNode ? input.parentNode.querySelector('#retell-thinking-msg') : null;
+                if (msg) msg.remove();
+            }
+            if (button) {
+                button.style.removeProperty('display');
+            }
+            if (currentRoot) {
+                const bubble = currentRoot.querySelector('#retell-typing-bubble');
+                if (bubble) bubble.remove();
+            }
+            if (thinkingTimeout) clearTimeout(thinkingTimeout);
+        }
+    }
+
+    function getContainerAndElements() {
+        let root = null;
+        let input = null;
+        let button = null;
+        let messagesContainer = null;
+        
+        // 1. Try finding it inside any shadow DOM
+        const allElements = document.querySelectorAll('*');
+        for (let el of allElements) {
+            if (el.shadowRoot) {
+                input = el.shadowRoot.querySelector('textarea, input[type="text"]');
+                if (input) {
+                    root = el.shadowRoot;
+                    break;
+                }
+            }
+        }
+        
+        // 2. Try finding it in normal DOM
+        if (!input) {
+            input = document.querySelector('textarea, input[type="text"]');
+            if (input) root = document;
+        }
+        
+        if (root && input) {
+            button = root.querySelector('button[class*="endButton" i], button[class*="send" i], button[type="submit"]') || root.querySelector('button');
+            messagesContainer = root.querySelector('[class*="_messages_"], [class*="messages"]');
+            if (!messagesContainer && input.parentElement) {
+                // Fallback: use a parent as message container if specific class not found
+                messagesContainer = root.querySelector('div'); 
+            }
+            return { root, input, button, messagesContainer };
+        }
+        
+        return null;
+    }
+    
+    function initAddon(els) {
+        if (!els) return;
+        const { root, input, button, messagesContainer } = els;
+        
+        // If we already attached to this specific input, do nothing
+        if (currentInput === input) return;
+        
+        console.warn('[Retell Thinking] Chat input found! Attaching listeners...');
+        currentInput = input;
+        currentButton = button;
+        currentRoot = root;
+        
+        // 1. Listen for Enter key
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                if (input.value.trim() !== '') {
+                    console.warn('[Retell Thinking] Enter pressed, showing thinking state');
+                    setTimeout(() => setThinkingState(input, button, true), 50);
+                }
+            }
+        });
+        
+        // 2. Listen for Send button click
+        if (button) {
+            button.addEventListener('click', () => {
+                if (input.value.trim() !== '') {
+                    console.warn('[Retell Thinking] Send button clicked, showing thinking state');
+                    setTimeout(() => setThinkingState(input, button, true), 50);
+                }
+            });
+        }
+        
+        // Observe messages container for new agent messages
+        if (messagesObserver) messagesObserver.disconnect();
+        if (messagesContainer) {
+            messagesObserver = new MutationObserver((mutations) => {
+                for (let mut of mutations) {
+                    if (mut.type === 'childList' && mut.addedNodes.length > 0) {
+                        for (let node of mut.addedNodes) {
+                            if (node.nodeType === 1) { // Element node
+                                if (isThinking) {
+                                    const timeSinceSend = Date.now() - lastSendTime;
+                                    // If a message is added within 500ms of clicking Send, it's almost certainly 
+                                    // the user's own message being appended synchronously by React.
+                                    if (timeSinceSend < 500) {
+                                        console.warn('[Retell Thinking] Ignored fast mutation (likely user message). ms:', timeSinceSend);
+                                        continue;
+                                    }
+                                    
+                                    console.warn('[Retell Thinking] Agent reply detected (after ' + timeSinceSend + 'ms), restoring state');
+                                    setThinkingState(currentInput, currentButton, false);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+            messagesObserver.observe(messagesContainer, { childList: true, subtree: true });
+        }
+    }
+    
+    function setupObservers() {
+        console.warn('[Retell Thinking] Starting polling for chat window...');
+        // Poll every 1 second. This handles the widget taking time to load,
+        // AND handles the chat window being opened/closed dynamically.
+        setInterval(() => {
+            const els = getContainerAndElements();
+            if (els) {
+                initAddon(els);
+            }
+        }, 1000);
+    }
+    
+    // Start on DOMContentLoaded or immediately if already loaded
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupObservers);
+    } else {
+        setupObservers();
+    }
+})();
+  </script>
     
   <script>
     // Custom script to forcefully replace the Retell widget's default FAB icon
